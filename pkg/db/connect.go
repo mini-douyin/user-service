@@ -20,7 +20,6 @@ func Init() {
 		os.Getenv("DB_NAME"),
 		os.Getenv("DB_PORT"),
 	)
-
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {

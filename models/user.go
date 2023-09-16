@@ -6,9 +6,9 @@ import (
 )
 
 type User struct {
-	gorm.Model
-	Email    string `gorm:"uniqueIndex;not null"`
-	Password string `gorm:"not null"`
+	ID       uint   `gorm:"primaryKey"`
+	Email    string `gorm:"uniqueIndex;not null" binding:"required,email,max=100"`
+	Password string `gorm:"not null" binding:"required,min=6,max=50"`
 }
 
 // BeforeCreate 是 GORM 的 hook，在插入记录之前执行
