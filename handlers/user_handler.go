@@ -1,9 +1,12 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"net/http"
+	"strconv"
 	"user-service/models"
 	"user-service/services"
 	"user-service/utils/token"
@@ -15,6 +18,19 @@ type UserHandler struct {
 
 func NewUserHandler(svc services.UserService) *UserHandler {
 	return &UserHandler{service: svc}
+}
+
+type UserWithProfileResponse struct {
+	ID             uint   `json:"id"`
+	Email          string `json:"email"`
+	Avatar         string `json:"avatar"`
+	Background     string `json:"background"`
+	Signature      string `json:"signature"`
+	FollowingCount int    `json:"following_count"`
+	FollowerCount  int    `json:"follower_count"`
+	LikesGiven     int    `json:"likes_given"`
+	LikesReceived  int    `json:"likes_received"`
+	VideoCount     int    `json:"video_count"`
 }
 
 func (h *UserHandler) Register(c *gin.Context) {
@@ -78,4 +94,43 @@ func (h *UserHandler) Login(c *gin.Context) {
 		"token":   tokenString,
 		"user":    user.Email,
 	})
+}
+
+func (h *UserHandler) GetUserById(c *gin.Context) {
+	userIdStr := c.Param("id")
+	userId, err := strconv.Atoi(userIdStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": fmt.Sprintf("Invalid user ID format. %v", err.Error())})
+		return
+	}
+
+	user, err := h.service.GetUserWithProfileById(uint(userId))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": fmt.Sprintf("User not found. %v", err.Error())})
+			return
+		}
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": fmt.Sprintf("Error fetching user. %v", err.Error())})
+			return
+		}
+	}
+
+	response := UserWithProfileResponse{
+		ID:             user.ID,
+		Email:          user.Email,
+		Avatar:         user.Profile.Avatar,
+		Background:     user.Profile.Background,
+		Signature:      user.Profile.Signature,
+		FollowingCount: user.Profile.FollowingCount,
+		FollowerCount:  user.Profile.FollowerCount,
+		LikesGiven:     user.Profile.LikesGiven,
+		LikesReceived:  user.Profile.LikesReceived,
+		VideoCount:     user.Profile.VideoCount,
+	}
+
+	c.JSON(http.StatusOK, response)
 }

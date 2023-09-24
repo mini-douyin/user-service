@@ -30,7 +30,7 @@ func Init() {
 }
 
 func migrateModels() {
-	err := DB.AutoMigrate(&models.User{})
+	err := DB.AutoMigrate(&models.User{}, &models.UserProfile{})
 	if err != nil {
 		log.Fatalf("Error migrating: %v", err)
 	}
