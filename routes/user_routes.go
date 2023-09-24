@@ -17,5 +17,6 @@ func UserRoutes(r *gin.Engine) {
 	{
 		v1.POST("/users", userHandler.Register)
 		v1.POST("/users/login", userHandler.Login)
+		v1.GET("/users/:id", userHandler.GetUserById)
 	}
 }

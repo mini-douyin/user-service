@@ -8,6 +8,7 @@ import (
 type UserService interface {
 	Register(user *models.User) error
 	GetUserByEmail(email string) (*models.User, error)
+	GetUserWithProfileById(userId uint) (*models.User, error)
 }
 
 type DefaultUserService struct {
@@ -23,5 +24,9 @@ func (svc *DefaultUserService) Register(user *models.User) error {
 }
 
 func (svc *DefaultUserService) GetUserByEmail(email string) (*models.User, error) {
-	return svc.repo.GetByEmail(email)
+	return svc.repo.GetUserByEmail(email)
+}
+
+func (svc *DefaultUserService) GetUserWithProfileById(userId uint) (*models.User, error) {
+	return svc.repo.GetUserWithProfileById(userId)
 }
