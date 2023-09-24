@@ -11,7 +11,6 @@ type User struct {
 	Password string `gorm:"not null" binding:"required,min=6,max=50"`
 }
 
-// BeforeCreate 是 GORM 的 hook，在插入记录之前执行
 func (user *User) BeforeCreate(tx *gorm.DB) (err error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -21,7 +20,6 @@ func (user *User) BeforeCreate(tx *gorm.DB) (err error) {
 	return
 }
 
-// CheckPassword 用于检查输入的密码与存储的哈希是否匹配
 func (user *User) CheckPassword(password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	return err == nil
