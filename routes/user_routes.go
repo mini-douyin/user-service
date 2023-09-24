@@ -16,5 +16,6 @@ func UserRoutes(r *gin.Engine) {
 	v1 := r.Group("/api/v1")
 	{
 		v1.POST("/users", userHandler.Register)
+		v1.POST("/users/login", userHandler.Login)
 	}
 }

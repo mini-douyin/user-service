@@ -33,12 +33,48 @@ func (h *UserHandler) Register(c *gin.Context) {
 
 	if err := h.service.Register(&user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to register user."})
+			"error": fmt.Sprintf("Failed to register user. %v", err.Error())})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Registered!",
+		"token":   tokenString,
+		"user":    user.Email,
+	})
+}
+
+func (h *UserHandler) Login(c *gin.Context) {
+	var inputData struct {
+		Email    string `json:"email" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&inputData); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := h.service.GetUserByEmail(inputData.Email)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Incorrect email or password."})
+		return
+	}
+
+	if !user.CheckPassword(inputData.Password) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Incorrect email or password."})
+		return
+	}
+
+	tokenString, err := token.GenerateToken(user.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": fmt.Sprintf("Failed to generate token. %v", err.Error())})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Registered!",
+		"message": "Logged in!",
 		"token":   tokenString,
 		"user":    user.Email,
 	})
